@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MBS_PlayerMovement : MonoBehaviour
 {
@@ -43,6 +44,11 @@ public class MBS_PlayerMovement : MonoBehaviour
         {
             rbPlayer.linearVelocity = new Vector2(rbPlayer.linearVelocity.x, JumpForce);
             onGround = false;
+        }
+        
+        if (transform.position.y < -10)
+        {
+            SceneManager.LoadScene("Home");
         }
     }
 

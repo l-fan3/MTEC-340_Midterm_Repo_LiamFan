@@ -1,42 +1,29 @@
 using UnityEngine;
 using TMPro;
-using System;
+using UnityEngine.SceneManagement;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting.FullSerializer;
 
-public class MSB_GameBehaviour : MonoBehaviour
+public class MBS_GameBehaviour : MonoBehaviour
 {
-    public static MSB_GameBehaviour Instance;
+    public static MBS_GameBehaviour Instance;
 
-    //scoring get set
-    private int _score = 0;
-    public int Score
-    {
-        get { return _score; }
-        set
-        {
-            _score = value;
-            UpdateScoreUI();
-        }
-    }
+    // Timer settings
+    private float _timeRemaining = 5f; // Countdown timer starts at 60 seconds
+    private bool _isGameActive = true;
 
-    //Scoring UI elements
-    [SerializeField] private TextMeshProUGUI _messages;
-    [SerializeField] private TextMeshProUGUI _scoreTextUI;
-    //pause 
+    // UI Elements
+    [SerializeField] public TextMeshProUGUI _messages;
+    [SerializeField] public TextMeshProUGUI _timerTextUI;
+
+    // Game state management
     public Utilities.GameplayState State = Utilities.GameplayState.Play;
     public KeyCode pause;
+
     void Awake()
     {
         // Singleton Pattern
-
-        //when creating an instance, check if one already exists,
-        //and if the existing is the one that is trying to be created
         if (Instance != null && Instance != this)
         {
-            //if a different instance already exists,
-            //please destroy the instance that is currently being created
             Destroy(this);
         }
         else
@@ -46,41 +33,8 @@ public class MSB_GameBehaviour : MonoBehaviour
         }
 
         _messages.enabled = false;
+        UpdateTimerUI();
     }
-    
-  private void UpdateScoreUI()
-  {
-      if (_scoreTextUI != null)
-      {
-          _scoreTextUI.text = "Score: " + _score.ToString();
-      }
-  }
-  
-
-  public static class Utilities
-  {
-      public enum GameplayState
-      {
-          Play,
-          Pause
-      }
-  }
-  private void SwitchState()
-  {
-      if (State == Utilities.GameplayState.Play)
-      {
-          State = Utilities.GameplayState.Pause;
-          Time.timeScale = 0; // Freezes the game
-          _messages.text = "Paused";
-          _messages.enabled = true;
-      }
-      else
-      {
-          State = Utilities.GameplayState.Play;
-          Time.timeScale = 1; // Resumes the game
-          _messages.enabled = false;
-      }
-  }
 
     void Update()
     {
@@ -88,7 +42,74 @@ public class MSB_GameBehaviour : MonoBehaviour
         {
             SwitchState();
         }
+
+        if (State == Utilities.GameplayState.Play && _isGameActive)
+        {
+            UpdateTimer();
+        }
+    }
+
+    private void UpdateTimer()
+    {
+        if (_timeRemaining > 0)
+        {
+            _timeRemaining -= Time.deltaTime;
+            UpdateTimerUI();
+        }
+        else
+        {
+            _timeRemaining = 0;
+            _isGameActive = false;
+            Victory();
+        }
+    }
+
+    private void UpdateTimerUI()
+    {
+        if (_timerTextUI != null)
+        {
+            int minutes = Mathf.FloorToInt(_timeRemaining / 60);
+            int seconds = Mathf.FloorToInt(_timeRemaining % 60);
+            _timerTextUI.text = string.Format("{0:0}:{1:00}", minutes, seconds);
+        }
+    }
+
+    private void Victory()
+    {
+        State = Utilities.GameplayState.Victory;
+        SceneManager.LoadScene("Victory");
+    }
+
+
+    
+
+    // Unified method for switching between states
+    private void SwitchState()
+    {
+        if (State == Utilities.GameplayState.Play)
+        {
+            State = Utilities.GameplayState.Pause;
+            Time.timeScale = 0; // Freezes the game
+            _messages.text = "The Onslaught Awaits...";
+            _messages.enabled = true;
+        }
+        else if (State == Utilities.GameplayState.Pause)
+        {
+            State = Utilities.GameplayState.Play;
+            Time.timeScale = 1; // Resumes the game
+            _messages.enabled = false;
+        }
+    }
+
+    public static class Utilities
+    {
+        public enum GameplayState
+        {
+            Play,
+            Pause,
+            Lose,
+            Victory
+        }
     }
 }
-
 

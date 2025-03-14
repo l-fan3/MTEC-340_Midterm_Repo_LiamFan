@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour
+public class MBS_EnemyHealth : MonoBehaviour
 {
     public int health = 30;
 

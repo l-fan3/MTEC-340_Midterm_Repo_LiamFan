@@ -3,18 +3,13 @@ using UnityEngine;
 
 public class MBS_PlayerAttack : MonoBehaviour
 {
-    public float AttackRange = 3.0f;
+    public float AttackRange = 5.0f;
     public int AttackDamage = 10;
     public LayerMask EnemyLayer;
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButtonDown(0)) // Click once per attack
         {
             Attack();
         }
@@ -22,17 +17,22 @@ public class MBS_PlayerAttack : MonoBehaviour
 
     void Attack()
     {
-        //play attack animation
         Debug.Log("Swing the Axe!");
-        //detect enemies in range
+
+        // Detect enemies in range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, AttackRange, EnemyLayer);
-    
-        //damage them
+
+        // Damage enemies
         foreach (Collider2D enemy in hitEnemies)
         {
-            enemy.GetComponent<EnemyHealth>()?.TakeDamage(AttackDamage); 
+            enemy.GetComponent<MBS_EnemyHealth>()?.TakeDamage(AttackDamage); 
         }
-    
     }
 
+    // Draw the attack radius in the editor
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, AttackRange);
+    }
 }
